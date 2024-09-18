@@ -1,25 +1,35 @@
-# frontend.py
 import streamlit as st
-import requests
+from audio_recorder_streamlit import audio_recorder
+import backend
 
-backend_url = "http://localhost:8000/analyze"
+def bot_start():
+    recorded_audio = audio_recorder()
+    if recorded_audio:
+        audio_file = 'audio.mp3'
+        with open(audio_file, 'wb') as f:
+            f.write(recorded_audio)
+        
+        transcribed_text = backend.transcribe_audio_with_whisper(audio_file, st.session_state.client)
+        st.write(f"Texto transcrito: {transcribed_text}")
+        
+        response_text = backend.get_assistant_response(transcribed_text, st.session_state.client, st.session_state.thread_id, st.session_state.assistant_id)
+        st.write(f"Resposta do chatbot: {response_text}")
+        
+        response_audio = 'response_audio.mp3'
+        backend.text_to_audio(response_text, response_audio, st.session_state.client)
+        st.audio(response_audio)
 
-st.title("Visual Personal Assistant")
+st.title("English Practice Chatbot")
 
-context = []
+if 'client' not in st.session_state:
+    api_key = st.text_input("Digite sua chave da API da OpenAI", type="password")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-
-if uploaded_file is not None:
-    st.image(uploaded_file, caption="Uploaded Image.", use_column_width=True)
-    user_input = st.text_input("Ask a question about the image:")
-
-    if st.button("Submit"):
-        files = {"file": uploaded_file.getvalue()}
-        data = {"context": "|||".join(context), "user_input": user_input}
-        response = requests.post(backend_url, files=files, data=data)
-        bot_response = response.json().get("response", "")
-
-        st.write("Assistant:", bot_response)
-        context.append(f"User: {user_input}")
-        context.append(f"Assistant: {bot_response}")
+    if api_key:
+        st.session_state.client = backend.set_key(api_key)
+        st.session_state.thread_id, st.session_state.assistant_id = backend.set_assistant(st.session_state.client)
+        st.success("API Key validada e assistente configurado. Você pode começar a gravar áudios.")
+        bot_start()
+else:
+    bot_start()
+    
+#key: sk-hTkXQgSv6FHdbQiN318PdNy9QZQfp-_n6-GZc0FoFiT3BlbkFJuyh1urSnrm3CVQzUrSrkSVL4LNCxec1LMR99LzvCUA

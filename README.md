@@ -1,6 +1,18 @@
-# Visual Personal Assistant
+# English Practice Chatbot
 
-Este projeto utiliza transformadores de visão e a API OpenAI para criar um assistente pessoal visual que pode analisar imagens e responder perguntas sobre elas.
+This project is an English practice chatbot that allows users to converse with an AI and practice their speaking skills. The system accepts audio inputs, transcribes them using OpenAI's Whisper API, interacts with the OpenAI API, and provides audio responses.
+
+## Features
+
+- Record audio files for conversation.
+- Receive transcriptions of your audio.
+- Get responses from the chatbot.
+- Listen to audio responses from the chatbot.
+
+## Requirements
+
+- Python 3.7+
+- OpenAI API Key
 
 ## Estrutura do projeto
 
@@ -14,8 +26,8 @@ seu-repositorio/
 
 ### Passo 1: Clonar o repositório
 
-git clone https://github.com/seu-usuario/seu-repositorio.git
-cd seu-repositorio
+git clone 
+cd 
 
 ### Passo 2: Criar um ambiente virtual (opcional, mas recomendado)
 
@@ -26,18 +38,6 @@ source venv/bin/activate  # No Windows use: venv\Scripts\activate
 
 pip install -r requirements.txt
 
-### Passo 4: Configurar a chave da API OpenAI
-
-Substitua 'YOUR_OPENAI_API_KEY' no arquivo backend.py pela sua chave de API da OpenAI.
-
 ### Passo 5: Executar a aplicação
 
 streamlit run frontend.py
-Open your web browser and go to http://localhost:8501.
-
-## Usage
-
-1. Upload an image.
-2. Ask a question about the image.
-3. The assistant will analyze the image and respond to your question.
-4. Continue the conversation by asking follow-up questions.

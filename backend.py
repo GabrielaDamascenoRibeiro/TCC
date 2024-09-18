@@ -1,63 +1,56 @@
-# backend.py
-import torch
-from transformers import ViTFeatureExtractor, ViTForImageClassification
-from PIL import Image
-import openai
-import io
-from fastapi import FastAPI, UploadFile, Form
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import uvicorn
+from openai import OpenAI
 
-# Load ViT model and feature extractor
-feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
-model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
+def set_key(api_key):
+    return (OpenAI(api_key = api_key))
 
-# Set OpenAI API key
-openai.api_key = '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'
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-def analyze_image(image_bytes):
-    image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-    inputs = feature_extractor(images=image, return_tensors="pt")
-    outputs = model(**inputs)
-    logits = outputs.logits
-    predicted_class_idx = logits.argmax(-1).item()
-    return model.config.id2label[predicted_class_idx]
-
-def generate_response(prompt, context=[]):
-    messages = [{"role": "system", "content": "You are a helpful assistant."}]
-    messages += [{"role": "user", "content": msg} for msg in context]
-    messages.append({"role": "user", "content": prompt})
-
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=messages,
-        max_tokens=150
+def set_assistant(client):
+    assistant = client.beta.assistants.create(
+        name="English Teacher",
+        instructions="You are a personal english conversational teacher, your goal is to keep an english conversation going and correcting eventual mistakes. Do your best to always keep a conversation, and only speak in the student's native language if necessary.",
+        model="gpt-4o"
     )
-    return response.choices[0].message['content']
+    thread = client.beta.threads.create()
+    thread_id = thread.id
+    assistant_id = assistant.id
+    return (thread_id, assistant_id)
 
-class Context(BaseModel):
-    context: list
-    user_input: str
+def transcribe_audio_with_whisper(audio_file, client): 
+    with open (audio_file, 'rb') as audio_file:
+        response = client.audio.transcriptions.create(
+            model="whisper-1", 
+            file=audio_file
+        )
+        return response.text
 
-@app.post("/analyze")
-async def process_image_and_respond(file: UploadFile, context: str = Form(...), user_input: str = Form(...)):
-    image_bytes = await file.read()
-    context = context.split("|||")
-    image_analysis = analyze_image(image_bytes)
-    full_prompt = f"Image analysis: {image_analysis}. User question: {user_input}"
-    response = generate_response(full_prompt, context)
-    return {"response": response}
+def get_assistant_response(text,client,thread_id, assistant_id):
+    message = client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=text
+    )
+    run = client.beta.threads.runs.create(
+        thread_id=thread_id,
+        assistant_id=assistant_id,
+        instructions="Please address the user as Gabi. Gabi is a Portuguese native speaker who needs to practice her english conversation skills."
+    )
+    
+    import time
+    while run.status != 'completed':
+        time.sleep(1)
+        run = client.beta.threads.runs.retrieve(
+            thread_id=thread_id,
+            run_id=run.id
+        )
+    
+    messages = client.beta.threads.messages.list(
+        thread_id=thread_id
+    )
+    return messages.data[0].content[0].text.value
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+def text_to_audio(text, audio, client):
+    response = client.audio.speech.create(
+        model="tts-1",
+        voice="alloy",
+        input=text
+    )
+    response.stream_to_file(audio)
