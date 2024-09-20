@@ -64,9 +64,43 @@ def img_convo_bot(client,key):
             backend.text_to_audio(response_text, response_audio, client)
             st.audio(response_audio)
 
-def pdf_convo_bot():
-    st.write('pdf convoo')
-    return
+def pdf_convo_bot(client,thread_id,assistant_id):
+    if 'set_pdf' not in st.session_state:
+        st.session_state.set_pdf = None
+    if 'uploaded_pdf' not in st.session_state:
+        st.session_state.uploaded_pdf = None
+    if 'file_id' not in st.session_state:
+        st.session_state.file_id = None
+
+    if st.session_state.set_pdf is None:
+        st.session_state.uploaded_pdf = st.file_uploader("Escolha um PDF para guiar a conversa!", type=["pdf"])
+        if st.session_state.uploaded_pdf:
+            with open("pdf.pdf", "wb") as f:
+                f.write(st.session_state.uploaded_pdf.getbuffer())
+                st.success("Pdf carregado com sucesso! Agora você pode gravar o áudio.")
+            
+            message_file = client.files.create(
+                file=open("pdf.pdf", "rb"), purpose="assistants"
+            )
+            st.session_state.file_id = message_file.id
+            st.session_state.set_pdf = True
+
+    if st.session_state.set_pdf is not None and st.session_state.file_id is not None:
+        recorded_audio = audio_recorder()
+        if recorded_audio:
+            audio_file = 'audio.mp3'
+            with open(audio_file, 'wb') as f:
+                f.write(recorded_audio)
+            
+            transcribed_text = backend.audio_to_text(audio_file, client)
+            st.write(f"Texto transcrito: {transcribed_text}")
+            
+            response_text = backend.pdf_get_assistant_response(st.session_state.file_id, transcribed_text, client, thread_id, assistant_id)
+            st.write(f"Resposta do chatbot: {response_text}")
+            
+            response_audio = 'response_audio.mp3'
+            backend.text_to_audio(response_text, response_audio, client)
+            st.audio(response_audio)
 
 #Main App
 def main():
@@ -111,5 +145,3 @@ st.title("Language Practice Chatbot")
 
 if __name__ == '__main__':
     main()
-
-#key: sk-LSNmtTh2C7GqteP_5u5U6b69fEZy1dGbSgPlf7KRRBT3BlbkFJyURC53IuQtM53uFC7Qmklhw3-euuYibZ2i-uhvM74A

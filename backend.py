@@ -101,23 +101,25 @@ def pdf_set_assistant(client):
     assistant = client.beta.assistants.create(
         name="English Teacher",
         instructions="You are a personal english conversational teacher, your goal is to keep an english conversation going and correcting eventual mistakes. Do your best to always keep a conversation, and only speak in the student's native language if necessary.",
-        model="gpt-4o"
+        model="gpt-4o",
+        tools=[{"type": "file_search"}]
     )
     thread = client.beta.threads.create()
     thread_id = thread.id
     assistant_id = assistant.id
     return (thread_id, assistant_id)
 
-def pdf_get_assistant_response(text,client,thread_id, assistant_id):
+def pdf_get_assistant_response(file, text,client,thread_id, assistant_id):
     message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
-        content=text
+        content=text,
+        attachments=[{"file_id": file, "tools": [{"type": "file_search"}]}]
     )
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id,
-        instructions= "Please address the user as Gabi. Gabi is a Portuguese native speaker who needs to practice her english conversation skills."
+        instructions= "Please address the user as Gabi. Gabi is a Portuguese native speaker who needs to practice her english conversation skills. Use the attached file as context for the conversation."
     )
     
     import time
