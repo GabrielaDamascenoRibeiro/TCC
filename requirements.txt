@@ -1,5 +1,5 @@
 streamlit
 openai
-pydub
-speechrecognition
-gtts
+pillow
+requests
+pybase64
