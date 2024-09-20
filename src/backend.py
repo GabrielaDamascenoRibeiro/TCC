@@ -8,7 +8,7 @@ def set_key(api_key):
 def text_to_audio(text, audio, client):
     response = client.audio.speech.create(
         model="tts-1",
-        voice="alloy",
+        voice="echo",
         input=text
     )
     response.stream_to_file(audio)

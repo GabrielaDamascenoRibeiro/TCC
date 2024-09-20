@@ -1,6 +1,6 @@
 import streamlit as st
 from audio_recorder_streamlit import audio_recorder
-import backend
+import src.backend as backend
 from PIL import Image
 import base64
 
@@ -13,7 +13,7 @@ def encode_image(image_path):
 def open_convo_bot(client,thread_id, assistant_id):
     recorded_audio = audio_recorder()
     if recorded_audio:
-        audio_file = 'audio.mp3'
+        audio_file = 'data\\audio.mp3'
         with open(audio_file, 'wb') as f:
             f.write(recorded_audio)
         
@@ -23,7 +23,7 @@ def open_convo_bot(client,thread_id, assistant_id):
         response_text = backend.op_get_assistant_response(transcribed_text,client,thread_id,assistant_id)
         st.write(f"Resposta do chatbot: {response_text}")
         
-        response_audio = 'response_audio.mp3'
+        response_audio = 'data\\response_audio.mp3'
         backend.text_to_audio(response_text, response_audio,client)
         st.audio(response_audio)
 
@@ -40,7 +40,7 @@ def img_convo_bot(client,key):
 
         if st.session_state.uploaded_file:
             image = Image.open(st.session_state.uploaded_file)
-            st.session_state.img_path = "image.jpg"
+            st.session_state.img_path = "data\\image.jpg"
             image.save(st.session_state.img_path)
             st.session_state.vbase64_image = encode_image(st.session_state.img_path)
             st.image(st.session_state.img_path, caption="Imagem Selecionada para Conversa", width=200)
@@ -50,7 +50,7 @@ def img_convo_bot(client,key):
         recorded_audio = audio_recorder()
 
         if recorded_audio:
-            audio_file = 'audio.mp3'
+            audio_file = 'data\\audio.mp3'
             with open(audio_file, 'wb') as f:
                 f.write(recorded_audio)
 
@@ -60,7 +60,7 @@ def img_convo_bot(client,key):
             response_text = backend.img_get_assistant_response(transcribed_text, st.session_state.vbase64_image, key)
             st.write(f"Resposta do chatbot: {response_text}")
 
-            response_audio = 'response_audio.mp3'
+            response_audio = 'data\\response_audio.mp3'
             backend.text_to_audio(response_text, response_audio, client)
             st.audio(response_audio)
 
@@ -75,12 +75,12 @@ def pdf_convo_bot(client,thread_id,assistant_id):
     if st.session_state.set_pdf is None:
         st.session_state.uploaded_pdf = st.file_uploader("Escolha um PDF para guiar a conversa!", type=["pdf"])
         if st.session_state.uploaded_pdf:
-            with open("pdf.pdf", "wb") as f:
+            with open("data\\pdf.pdf", "wb") as f:
                 f.write(st.session_state.uploaded_pdf.getbuffer())
                 st.success("Pdf carregado com sucesso! Agora você pode gravar o áudio.")
             
             message_file = client.files.create(
-                file=open("pdf.pdf", "rb"), purpose="assistants"
+                file=open("data\\pdf.pdf", "rb"), purpose="assistants"
             )
             st.session_state.file_id = message_file.id
             st.session_state.set_pdf = True
@@ -88,7 +88,7 @@ def pdf_convo_bot(client,thread_id,assistant_id):
     if st.session_state.set_pdf is not None and st.session_state.file_id is not None:
         recorded_audio = audio_recorder()
         if recorded_audio:
-            audio_file = 'audio.mp3'
+            audio_file = 'data\\audio.mp3'
             with open(audio_file, 'wb') as f:
                 f.write(recorded_audio)
             
@@ -98,7 +98,7 @@ def pdf_convo_bot(client,thread_id,assistant_id):
             response_text = backend.pdf_get_assistant_response(st.session_state.file_id, transcribed_text, client, thread_id, assistant_id)
             st.write(f"Resposta do chatbot: {response_text}")
             
-            response_audio = 'response_audio.mp3'
+            response_audio = 'data\\response_audio.mp3'
             backend.text_to_audio(response_text, response_audio, client)
             st.audio(response_audio)
 
