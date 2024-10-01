@@ -16,13 +16,18 @@ This project is part of the undergraduate thesis that explores the application o
 ## Project Structure
 This repository contains two main components:
 1. src: That contains the source files:
+  
   1.1. Backend (backend.py): Responsible for the chatbot’s logic, OpenAI API integration, and multimodal data processing (audio, text, image).
+  
   1.2. Frontend (frontend.py): Built with Streamlit, it provides a user-friendly interface for interacting with the chatbot.
 
 2. data: Contains the data files used in the chatbots:
-  1.1. MP3 files to store the audio files used by the user input (audio.mp3) and by the chatbot output (response_audio.mp3).
-  1.2. JPG file to store the image (image.jpg) file from the image based chatbot.
-  1.3. PDF file to store the pdf (pdf.pdf) file used in the PDF based chatbot.
+  
+  2.1. MP3 files to store the audio files used by the user input (audio.mp3) and by the chatbot output (response_audio.mp3).
+  
+  2.2. JPG file to store the image (image.jpg) file from the image based chatbot.
+  
+  2.3. PDF file to store the pdf (pdf.pdf) file used in the PDF based chatbot.
 
 ## Requirements
 - OpenAI API Key
@@ -44,4 +49,5 @@ streamlit run frontend.py
 For more information, contact:
 
 Name: Gabriela Damasceno Ribeiro
+
 Linkedin: [gabrieladamascenoribeiro](https://www.linkedin.com/in/gabrieladamascenoribeiro/)
