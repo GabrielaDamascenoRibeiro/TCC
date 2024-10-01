@@ -22,10 +22,10 @@ def audio_to_text(audio_file, client):
         return response.text
 
 #Open Convo Assistants
-def op_set_assistant(client):
+def op_set_assistant(user_info, client):
     assistant = client.beta.assistants.create(
-        name="English Teacher",
-        instructions="You are a personal english conversational teacher, your goal is to keep an english conversation going and correcting eventual mistakes. Do your best to always keep a conversation, and only speak in the student's native language if necessary.",
+        name="Personal Conversational Teacher",
+        instructions=f"You are a personal conversational teacher, your goal is to keep a conversation going and correcting eventual language mistakes. About your student, Name:{user_info['name']}, Pronouns: {user_info['pronouns']}, Studying the language:{user_info['study_language']} at level {user_info['level']}. ONLY RESPOND AND SPEAK in the language the student is trying to practice and learn. DO NOT speak in any language apart from the studying language.",
         model="gpt-4o"
     )
     thread = client.beta.threads.create()
@@ -33,7 +33,7 @@ def op_set_assistant(client):
     assistant_id = assistant.id
     return (thread_id, assistant_id)
 
-def op_get_assistant_response(text,client,thread_id, assistant_id):
+def op_get_assistant_response(user_info,text,client,thread_id,assistant_id):
     message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
@@ -42,7 +42,7 @@ def op_get_assistant_response(text,client,thread_id, assistant_id):
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id,
-        instructions= "Please address the user as Gabi. Gabi is a Portuguese native speaker who needs to practice her english conversation skills."
+        instructions= f"ONLY SPEAK AND RESPOND IN {user_info} LANGUAGE. Keep a conversation. Correct eventual language mistakes. Try to teach something new in the language the student is trying to practice and learn."
     )
     
     import time
@@ -59,7 +59,7 @@ def op_get_assistant_response(text,client,thread_id, assistant_id):
     return messages.data[0].content[0].text.value
 
 #Img Convo Assistants
-def img_get_assistant_response(text, img, client):
+def img_get_assistant_response(user_info, text, img, client):
     headers = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {client}"
@@ -69,7 +69,7 @@ def img_get_assistant_response(text, img, client):
     "model": "gpt-4o-mini",
     "messages": [
         {"role": "system", 
-         "content": "You are a personal english conversational teacher, your goal is to keep an english conversation going and correcting eventual mistakes. Do your best to always keep a conversation, and only speak in the student's native language if necessary. Please address the user as Gabi. Gabi is a Portuguese native speaker who needs to practice her english conversation skills."
+         "content": f"Use the image as context for the conversation. You are a personal conversational teacher, your goal is to keep a conversation going and correcting eventual language mistakes. About your student, Name:{user_info['name']}, Pronouns: {user_info['pronouns']}, Studying the language:{user_info['study_language']} at level {user_info['level']}. ONLY RESPOND AND SPEAK in the language the student is trying to practice and learn. DO NOT speak in any language apart from the studying language. Try to teach something new in the language the student is trying to practice and learn."
         },
         {
         "role": "user",
@@ -97,10 +97,10 @@ def img_get_assistant_response(text, img, client):
 
 
 #Pdf Convo Assistants
-def pdf_set_assistant(client):
+def pdf_set_assistant(user_info, client):
     assistant = client.beta.assistants.create(
         name="English Teacher",
-        instructions="You are a personal english conversational teacher, your goal is to keep an english conversation going and correcting eventual mistakes. Do your best to always keep a conversation, and only speak in the student's native language if necessary.",
+        instructions=f"You are a personal conversational teacher, your goal is to keep a conversation going and correcting eventual language mistakes. About your student, Name:{user_info['name']}, Pronouns: {user_info['pronouns']}, Studying the language:{user_info['study_language']} at level {user_info['level']}. ONLY RESPOND AND SPEAK in the language the student is trying to practice and learn. DO NOT speak in any language apart from the studying language.",
         model="gpt-4o",
         tools=[{"type": "file_search"}]
     )
@@ -109,7 +109,7 @@ def pdf_set_assistant(client):
     assistant_id = assistant.id
     return (thread_id, assistant_id)
 
-def pdf_get_assistant_response(file, text,client,thread_id, assistant_id):
+def pdf_get_assistant_response(user_info, file, text,client,thread_id, assistant_id):
     message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
@@ -119,7 +119,7 @@ def pdf_get_assistant_response(file, text,client,thread_id, assistant_id):
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id,
-        instructions= "Please address the user as Gabi. Gabi is a Portuguese native speaker who needs to practice her english conversation skills. Use the attached file as context for the conversation."
+        instructions= f"Use the attached file as context for the conversation. ONLY SPEAK AND RESPOND IN {user_info} LANGUAGE. Keep a conversation. Correct eventual language mistakes. Try to teach something new in the language the student is trying to practice and learn."
     )
     
     import time
